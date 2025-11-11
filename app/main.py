@@ -38,18 +38,7 @@ def get_db():
     finally:
         db.close()
 
-@app.get("/health")
-def health():
-    """Check if the app and DB are healthy."""
-    try:
-        from .db import SessionLocal
-        db = SessionLocal()
-        db.execute("SELECT 1")   # Quick ping to DB
-        db.close()
-        return {"status": "ok", "database": "connected"}
-    except Exception as e:
-        # If DB connection fails or any exception occurs
-        return {"status": "unhealthy", "database": "error", "details": str(e)}
+
 
 
 @app.post("/upload")

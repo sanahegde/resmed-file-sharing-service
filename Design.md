@@ -1,4 +1,4 @@
-# Design Document — File Sharing API (FastAPI + PostgreSQL)
+# Design Document — File Sharing API 
 
 This document describes the design and architecture of the **File Sharing API** built with **FastAPI** and **PostgreSQL**, containerized using **Docker Compose**.  
 It explains how the system works, how each component interacts, and how the backend, frontend, database, and Docker setup come together to form a reliable file-sharing service.
