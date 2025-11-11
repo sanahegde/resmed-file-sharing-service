@@ -19,14 +19,14 @@ Files are stored on disk under the `uploads/` directory, and metadata is persist
 
 ---
 
-## Run with Docker (Postgres + FastAPI)
+## Run with Docker 
 
-This is the easiest way to run the application.
+
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+git clone https://github.com/<username>/<repo>.git
+cd <repo>
 
 # Copy environment variables
 cp .env.example .env
