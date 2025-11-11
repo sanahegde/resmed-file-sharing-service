@@ -12,8 +12,8 @@ The project enforces a **20MB upload limit**, provides structured JSON responses
 - `GET /files` → List all uploaded file metadata  
 - `GET /files/{id}` → Download a specific file by ID  
 - `GET /health` → Check API and database connection status  
-- `http://127.0.0.1:8000/ui` → Upload, list, and download files interactively  
-- `http://127.0.0.1:8000/docs` → Explore and test all endpoints directly  
+
+
 
 Files are stored on disk under the `uploads/` directory, and metadata is persisted in **PostgreSQL**.
 
@@ -33,3 +33,7 @@ cp .env.example .env
 
 # Build and start containers
 docker compose up --build
+
+## To  view the endpoints
+- `http://127.0.0.1:8000/ui` → Upload, list, and download files interactively  
+- `http://127.0.0.1:8000/docs` → Explore and test all endpoints directly  
