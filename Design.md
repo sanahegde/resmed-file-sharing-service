@@ -1,109 +1,109 @@
-
 # Design Document — File Sharing API (FastAPI + PostgreSQL)
 
-This document describes the complete design and architecture of the **File Sharing API** built using **FastAPI** and **PostgreSQL**, containerized with **Docker Compose**. It explains how the system works, how the APIs are designed, and how the database, file storage, backend, frontend, and Docker components interact together. This serves as the overall design reference for the project.
+This document describes the design and architecture of the **File Sharing API** built with **FastAPI** and **PostgreSQL**, containerized using **Docker Compose**.  
+It explains how the system works, how each component interacts, and how the backend, frontend, database, and Docker setup come together to form a reliable file-sharing service.
 
 ---
 
 ## Overview
 
-The **File Sharing API** enables users to upload, list, and download files through RESTful endpoints. Uploaded files are stored locally on disk, while metadata (filename, size, timestamp, and file path) is stored in a PostgreSQL database. The system enforces a **20MB upload limit**, provides clear JSON responses, and offers a health check endpoint to verify database connectivity.  
-The project runs locally or through **Docker Compose**, which orchestrates the FastAPI application and PostgreSQL database. A lightweight **frontend UI** served from `/ui` allows easy interaction and testing.
+The **File Sharing API** is a lightweight application that allows users to upload, list, and download files through RESTful endpoints.  
+Uploaded files are stored locally on disk, while metadata — such as filename, size, upload time, and file path — is stored in a PostgreSQL database.  
+
+The API enforces a **20 MB upload limit**, provides clear JSON responses, and exposes a **health-check endpoint** to verify service and database availability.  
+Everything runs seamlessly either on your local machine or inside Docker containers managed through **Docker Compose**.  
+A small **frontend UI** served from `/ui` allows quick testing and interaction with the service.
 
 ---
 
 ## System Architecture
 
-The system follows a **three-layer design**:
-1. **Frontend** — A simple web interface (HTML, JS) that allows users to upload, list, and download files.
-2. **Backend** — A FastAPI application managing business logic, file I/O, and database operations.
-3. **Database** — A PostgreSQL instance storing metadata for uploaded files.
+The overall architecture follows a clean three-layer design:
+
+1. **Frontend Layer** – A simple HTML + JavaScript interface that communicates with the API to upload, view, and download files.
+2. **Backend Layer** – A FastAPI application that implements the business logic, file handling, and database interactions.
+3. **Database Layer** – A PostgreSQL instance that stores all file metadata securely and efficiently.
+
+All components are orchestrated through Docker Compose, which handles networking, volume persistence, and environment setup automatically.
 
 ---
 
 ## Database Design
 
-The PostgreSQL database manages all metadata related to uploaded files in a single table called **`files`**.  
-The schema is optimized for quick lookups and sorting.
-
-**Table: files**
+The database uses a single table, `files`, to store metadata about every uploaded file.  
+The schema is intentionally simple for fast lookup and easy scalability.
 
 | Column | Type | Description |
-|---------|------|-------------|
-| id | UUID | Unique file identifier |
-| name | VARCHAR | Original file name |
-| path | VARCHAR | Local file path |
-| size | BIGINT | File size in bytes |
-| uploaded_at | BIGINT | UNIX timestamp when the file was uploaded |
+|:-------|:------|:------------|
+| **id** | UUID | Unique file identifier |
+| **name** | VARCHAR | Original file name |
+| **path** | VARCHAR | Local file path on disk |
+| **size** | BIGINT | File size in bytes |
+| **uploaded_at** | BIGINT | UNIX timestamp of upload time |
 
-Each record is uniquely identified by a UUID. Indexes are placed on `id` and `uploaded_at` for efficient retrieval.  
-Database connection parameters are loaded from `.env`, and **SQLAlchemy ORM** is used for interactions, ensuring type safety and clean query abstractions.
+Each file is uniquely identified by its UUID. Indexes are applied on `id` and `uploaded_at` for faster queries.  
+Database credentials and connection parameters are defined in `.env`, and all operations are handled via **SQLAlchemy ORM** for safety and maintainability.
 
 ---
 
 ## File Storage Design
 
-All uploaded files are saved under an **`uploads/`** directory in the FastAPI container.  
-Each file name is replaced with a unique UUID to avoid duplication, and the original name and path are recorded in PostgreSQL.
+Uploaded files are stored in the `uploads/` directory inside the FastAPI container.  
+To avoid filename conflicts, every uploaded file is renamed using a generated UUID, while its original name and path are stored in the database.  
+
+This directory is mounted as a **Docker volume**, ensuring that uploaded files remain available even if the container is restarted or rebuilt.
 
 
-The uploads folder is mounted as a **persistent Docker volume**, ensuring files remain available even after container restarts or rebuilds.
 
 ---
 
 ## Backend Design
 
-The backend uses **FastAPI**, a high-performance Python web framework for building RESTful APIs.
+The backend is built with **FastAPI**, chosen for its speed, clean syntax, and automatic OpenAPI documentation.
 
-**Structure Overview:**
-- **main.py** — Defines routes, endpoints, and serves the frontend.
-- **models.py** — SQLAlchemy model for the `files` table.
-- **schemas.py** — Pydantic models for input/output validation.
-- **db.py** — Handles database connections and session management.
-- **config.py** — Loads environment variables for configuration.
-- **Dockerfile** — Defines container build for FastAPI service.
+**Key modules:**
+- `main.py` — Entry point defining all endpoints and serving the frontend.
+- `models.py` — SQLAlchemy model for the `files` table.
+- `schemas.py` — Pydantic models for validating request and response data.
+- `db.py` — Handles the database connection and session management.
+- `config.py` — Loads environment variables from `.env`.
+- `Dockerfile` — Defines how the FastAPI app image is built.
 
-The backend provides:
-- **Swagger UI** for API documentation at `/docs`
-- **Frontend UI** for user interaction at `/ui`
-- **Structured JSON responses** and error handling.
+The backend provides two built-in interfaces:
+- **Swagger UI** at `/docs` for testing all API routes.
+- **Frontend UI** at `/ui` for uploading, listing, and downloading files directly in the browser.
 
 ---
 
 ## Frontend Design
 
-The **frontend** for this is a lightweight HTML and JavaScript interface enabling users to:
-- Upload files (via `POST /upload`)
-- View all uploaded files (via `GET /files`)
-- Download specific files (via `GET /files/{id}`)
+The frontend is a small, static web page made with HTML and vanilla JavaScript.  
+It uses the Fetch API to interact with the backend endpoints:
+- `POST /upload` for uploading files,
+- `GET /files` for listing all uploaded files,
+- `GET /files/{id}` for downloading specific files.
 
-It uses **Fetch API** for asynchronous operations and dynamically updates the list of files after each upload.  
-The interface is automatically served from FastAPI at [http://127.0.0.1:8000/ui](http://127.0.0.1:8000/ui) and includes clear buttons and progress indicators for better usability.
+The interface automatically refreshes the list after every upload and displays live responses from the API.  
+It is served directly from FastAPI at [http://127.0.0.1:8000/ui](http://127.0.0.1:8000/ui).
 
 ---
 
 ## Docker Design
 
-The entire project is **containerized** using Docker Compose for simple setup and teardown.  
-Two containers are defined:
+The entire setup runs through Docker Compose, which defines two containers:
 
-- **FastAPI App Container** — Runs the backend and serves the frontend.
-- **PostgreSQL Container** — Stores file metadata.
+1. **FastAPI App Container** — Runs the backend and serves the UI.
+2. **PostgreSQL Container** — Hosts the database for file metadata.
 
-**docker-compose.yml** includes:
-- Environment variables
-- Network configuration
-- Volume mounting for persistence
-- Automatic dependency linking between `app` and `db`.
+**docker-compose.yml** handles:
+- Service networking between app and database,
+- Environment variable injection,
+- Volume mounting for persistent storage.
 
-**Commands:**
+Common commands:
 ```bash
-# Build and start services
+# Build and start containers
 docker compose up --build
-
-# Access
-Frontend UI → http://127.0.0.1:8000/ui
-Swagger Docs → http://127.0.0.1:8000/docs
 
 # Stop and remove containers
 docker compose down -v
