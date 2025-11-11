@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>File Sharing Service</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        :root {
+            --bg: #fafafa;
+            --card: #fff;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --text: #111827;
+            --brand: #2563eb;
+            --brand-900: #1e40af;
+            --ok: #0a7d0a;
+            --err: #b00020;
+            --radius: 14px;
+            --shadow: 0 10px 25px rgba(0, 0, 0, .06);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, system-ui, Segoe UI, Arial, sans-serif
+        }
+
+        .wrap {
+            max-width: 980px;
+            margin: 28px auto;
+            padding: 0 16px
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-weight: 700;
+            letter-spacing: .2px
+        }
+
+        .sub {
+            color: var(--muted);
+            font-size: .95rem;
+            margin-bottom: 18px;
+            word-break: break-word
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px 16px;
+            margin: 18px 0;
+            box-shadow: var(--shadow)
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        input[type=file] {
+            max-width: 100%
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #fff;
+            cursor: pointer;
+            transition: transform .04s ease, box-shadow .2s ease
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, .07)
+        }
+
+        .btn.primary {
+            background: var(--brand);
+            color: #fff;
+            border: none
+        }
+
+        .btn.primary:hover {
+            background: var(--brand-900)
+        }
+
+        .status {
+            min-height: 22px;
+            font-size: .92rem
+        }
+
+        .ok {
+            color: var(--ok)
+        }
+
+        .err {
+            color: var(--err)
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        pre {
+            background: #0f172a;
+            color: #e5e7eb;
+            border-radius: 10px;
+            padding: 10px;
+            overflow: auto;
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-size: .9rem;
+            margin: 10px 0 0
+        }
+
+        .table-wrap {
+            overflow-x: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 640px
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            vertical-align: middle
+        }
+
+        th {
+            font-size: .9rem;
+            color: var(--muted);
+            font-weight: 600
+        }
+
+        td.id {
+            max-width: 260px
+        }
+
+       
+        .mono {
+            font-family: ui-monospace, Menlo, Consolas, monospace;
+            font-size: .9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .filename {
+            max-width: 360px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-weight: 600;
+            font-size: .8rem
+        }
+
+        .toast {
+            position: fixed;
+            right: 14px;
+            bottom: 14px;
+            background: #111827;
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            box-shadow: 0 12px 22px rgba(0, 0, 0, .25);
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all .25s ease
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0)
+        }
+
+        @media (max-width:720px) {
+            .wrap {
+                padding: 0 12px
+            }
+
+            td.id {
+                max-width: 160px
+            }
+
+            .filename {
+                max-width: 220px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <h1>File Sharing Service</h1>
+        <div class="sub"> local API at <code>http://127.0.0.1:8000</code></div>
+
+        <section class="card">
+            <h2>1) Upload <span class="pill">≤ 20 MB</span></h2>
+            <div class="row" style="margin-top:10px">
+                <input id="fileInput" type="file" />
+                <button id="btnUpload" class="btn primary">Upload</button>
+                <span id="uploadStatus" class="status muted"></span>
+            </div>
+            <pre id="uploadOut" style="display:none"></pre>
+        </section>
+
+        <section class="card">
+            <h2>2) List metadata</h2>
+            <div class="row" style="margin-top:10px">
+                <button id="btnRefresh" class="btn">Refresh</button>
+                <span id="listStatus" class="status muted"></span>
+            </div>
+            <div class="table-wrap" style="margin-top:8px">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Size (bytes)</th>
+                            <th>Uploaded</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="filesBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>3) Health</h2>
+            <div class="row" style="margin-top:10px">
+                <button id="btnHealth" class="btn">Check</button>
+                <span id="healthOut" class="status muted"></span>
+            </div>
+        </section>
+    </div>
+
+    <div id="toast" class="toast">Done</div>
+
+    <script src="./app.js"></script>
+</body>
+
+</html>

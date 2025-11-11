@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: filesvc
+      POSTGRES_PASSWORD: filesvc
+      POSTGRES_DB: filesvc
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg:/var/lib/postgresql/data
+
+  app:
+    build: .
+    env_file: .env
+    environment:
+      # build SQLAlchemy URL from PG_* so it's always Postgres
+      PG_HOST: db
+      PG_PORT: 5432
+      PG_USER: filesvc
+      PG_PASSWORD: filesvc
+      PG_DATABASE: filesvc
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - db
+
+volumes:
+  pg: {}
