@@ -15,7 +15,7 @@ services:
     build: .
     env_file: .env
     environment:
-      # build SQLAlchemy URL from PG_* so it's always Postgres
+      
       PG_HOST: db
       PG_PORT: 5432
       PG_USER: filesvc

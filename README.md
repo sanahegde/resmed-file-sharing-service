@@ -1,4 +1,4 @@
-# File Sharing API (Postgres)
+# File Sharing API 
 
 This project implements a **file sharing REST API** built using **FastAPI** and **PostgreSQL**.  
 It supports uploading, listing, and downloading files, with file data stored locally and metadata stored in a PostgreSQL database.  

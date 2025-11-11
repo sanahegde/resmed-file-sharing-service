@@ -20,7 +20,7 @@ COPY .env.example .
 # Creating uploads directory inside the container
 RUN mkdir -p uploads
 
-# Expose FastAPI port
+# Exposing the FastAPI port
 EXPOSE 8000
 
 # Running the application with Uvicorn

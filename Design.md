@@ -31,7 +31,7 @@ All components are orchestrated through Docker Compose, which handles networking
 ## Database Design
 
 The database uses a single table, `files`, to store metadata about every uploaded file.  
-The schema is intentionally simple for fast lookup and easy scalability.
+The schema is simple for fast lookup and easy scalability.
 
 | Column | Type | Description |
 |:-------|:------|:------------|
@@ -59,7 +59,7 @@ This directory is mounted as a **Docker volume**, ensuring that uploaded files r
 
 ## Backend Design
 
-The backend is built with **FastAPI**, chosen for its speed, clean syntax, and automatic OpenAPI documentation.
+
 
 **Key modules:**
 - `main.py` — Entry point defining all endpoints and serving the frontend.
